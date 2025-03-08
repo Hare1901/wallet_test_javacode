@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 
-from models import Wallet, Operations
+from models import Wallet
 
 class WalletSerializer(serializers.ModelSerializer):
 	"""
@@ -18,8 +18,17 @@ class WalletSerializer(serializers.ModelSerializer):
 
 class OperationsSerializer(serializers.ModelSerializer):
 	"""
-	сериализатор для операций
+	сериализатор для операций и amount
 	"""
-	class Meta:
-		model = Operations
-		fields = ['operation_type', 'amount', 'created_at']
+	operation_type = serializers.ChoiceField(choices=['DEPOSIT', 'WITHDRAW'])
+	amount = serializers.DecimalField(max_digits=15, decimal_places=2)
+
+	def validate_amount(self, value):
+		"""
+		проверка суммы ввода
+		:param value: amount
+		:return: amount>0
+		"""
+		if value <= 0:
+			raise serializers.ValidationError("Сумма должна быть положительной.")
+		return value
